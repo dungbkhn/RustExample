@@ -162,6 +162,7 @@ async fn broker_loop(events: Receiver<Event>) {
             },
             disconnect = disconnect_receiver.next().fuse() => {
                 let (name, _pending_messages) = disconnect.unwrap(); // 3
+                println!("{} disconnected",name);
                 assert!(peers.remove(&name).is_some());
                 continue;
             },
