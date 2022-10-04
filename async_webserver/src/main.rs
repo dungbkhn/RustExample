@@ -53,7 +53,7 @@ use futures::stream::StreamExt;
 
 #[async_std::main]
 async fn main() {
-    let listener = TcpListener::bind("192.168.1.95:7878").await.unwrap();
+    let listener = TcpListener::bind("127.0.0.1:7878").await.unwrap();
     listener
         .incoming()
         .for_each_concurrent(/* limit */ None, |stream| async move {
