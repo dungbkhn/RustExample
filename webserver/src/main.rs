@@ -53,8 +53,8 @@ fn main() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
     let pool = ThreadPool::new(8);
 
-    //so lan tra loi req
-    for stream in listener.incoming().take(10000) {
+    //so lan tra loi n req thi them .take(n)
+    for stream in listener.incoming() {
         let stream = stream.unwrap();
 
         pool.execute(|| {

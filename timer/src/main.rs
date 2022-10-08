@@ -7,6 +7,7 @@ use std::{
     sync::mpsc::{sync_channel, Receiver, SyncSender},
     sync::{Arc, Mutex},
     task::Context,
+    thread,
     time::Duration,
 };
 // The timer we wrote in the previous section:
@@ -64,6 +65,7 @@ impl ArcWake for Task {
         // Implement `wake` by sending this task back onto the task channel
         // so that it will be polled again by the executor.
         let cloned = arc_self.clone();
+        println!("ArcWake for Task");
         arc_self
             .task_sender
             .send(cloned)
@@ -80,14 +82,24 @@ impl Executor {
             if let Some(mut future) = future_slot.take() {
                 // Create a `LocalWaker` from the task itself
                 let waker = waker_ref(&task);
+                println!("wh0-exec-run{:?}",waker);
+               
                 let context = &mut Context::from_waker(&*waker);
+                println!("wh1-exec-run{:?}",waker);
                 // `BoxFuture<T>` is a type alias for
                 // `Pin<Box<dyn Future<Output = T> + Send + 'static>>`.
                 // We can get a `Pin<&mut dyn Future + Send + 'static>`
                 // from it by calling the `Pin::as_mut` method.
-                if future.as_mut().poll(context).is_pending() {
+                let f = future.as_mut();
+                println!("wh2-exec-run{:?}",waker);
+                thread::sleep(Duration::new(8,0));
+                println!("wh3-exec-run{:?} - chay ham pool trong run",waker);
+                let f = f.poll(context);//begin run task here, always rerun if having future
+                println!("wh4-exec-run{:?} - chay ham ispending trong run",waker);
+                if f.is_pending() {
                     // We're not done processing the future, so put it
                     // back in its task to be run again in the future.
+                    println!("wh5-exec-run{:?}",waker);
                     *future_slot = Some(future);
                 }
             }

@@ -144,7 +144,7 @@ impl Worker {
 
             match message {
                 Ok(job) => {
-                    //println!("Worker {id} got a job; executing.");
+                    println!("Worker {id} got a job; executing.");
 
                     job();
                 }
@@ -154,7 +154,19 @@ impl Worker {
                 }
             }
         });
+        /*
+	let thread = thread::spawn(move || {
+	    while let Ok(job) = receiver.lock().unwrap().recv() {
+		    
+		    //match message {
+		    //    Ok(job) => {
+		            println!("Worker {id} got a job; executing.");
 
+		            job();
+		    
+            }
+        });
+        */
         Worker {
             id,
             thread: Some(thread),
