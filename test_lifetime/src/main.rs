@@ -95,6 +95,32 @@ impl<'b,'a> Important2<'a> {
     }
 }
 
+struct StrWrap<'a>(&'a str);
+
+fn make_wrapper1(string: &str) -> StrWrap {
+    StrWrap(string)
+}
+
+//or with rust 2018
+fn make_wrapper2(string: &str) -> StrWrap<'_> {
+    StrWrap(string)
+}
+
+//or
+fn make_wrapper3<'a>(string: &'a str) -> StrWrap<'a> {
+    StrWrap(string)
+}
+
+//'long:'short meaning long outlives short
+struct Foo<'a, 'b: 'a> {
+    field: &'a &'b str,//tham chieu toi tham chieu
+}
+
+fn make_foo1<'a>(string: &'a &str) -> Foo<'a,'a>  {
+    Foo{
+    field:string,
+   }
+}
 
 fn main (){
 	
@@ -136,5 +162,12 @@ fn main (){
 		
 		println!("in braket {}",output2);
 	}
-			
+	let s3 = String::from("hello world");
+
+    	let hello = &s3[..];
+	let shello=&hello;
+	make_wrapper1(&s1);
+	make_wrapper2(&s1);
+	make_wrapper3(&s1);
+	make_foo1(shello);
 }
