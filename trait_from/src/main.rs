@@ -1,4 +1,6 @@
-#[derive(Clone,Copy)]
+use std::fmt::Debug;
+
+#[derive(Clone,Copy,Debug)]
 struct CautrucA<T>{
 	f1:u8,
 	f2:u32,
@@ -10,11 +12,11 @@ impl<T> CautrucA<T>{
 		println!("hello from foo cautrucAb");
 	}
 	
-	fn test<K> ()
-	where K: MyTrait<T>
+	fn test<K> (k:K)
+	where K: MyTrait<T> + Debug
 	{
 		K::foo();
-		println!("hello from test of CautrucA");
+		println!("hello from test of CautrucA : {:?}",k);
 	}
 }
 
@@ -46,6 +48,6 @@ fn main() {
     	test::<CautrucA<u32>,u32>();
     	
     	let c = CautrucA::from(a);
-    	CautrucA::test::<CautrucA<u32>>();
+    	CautrucA::test::<CautrucA<u32>>(b);
     	println!("Hello, world2222! {}",c.f1.to_string());
 }
