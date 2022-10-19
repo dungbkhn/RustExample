@@ -44,11 +44,38 @@ fn generate_even<T>(a: T, b: T) -> impl Iterator<Item = T>
 }
 
 fn main() {
-    let mut even_i8s = generate_even(-11_i8, 11_i8);
+    /*let mut even_i8s = generate_even(-11_i8, 11_i8);
     let even_u8s = generate_even(0_u8, 11_u8);
     let even_i16s = generate_even(0_i16, 11_i16);
     let even_u16s = generate_even(0_u16, 11_u16);
     // and so on
     let even_u128s = generate_even(0_u128, 11_u128);
     assert_eq!(2, even_i8s.nth(0).unwrap());
+    */
+    
+    //let v = vec![100, 32, 57];
+    let v1 = vec![1, 2, 3];
+
+    let v1_iter = v1.iter();
+
+    for val in v1_iter {
+        println!("Got: {}", val);
+    }
+    
+    let v2_iter = v1.iter();
+    
+    for val in v2_iter {
+        println!("Got: {}", val);
+    }
+    
+    let v1: Vec<i32> = vec![1, 2, 3];
+
+    let v2: Vec<_> = v1.iter().map(|x| x + 1).map(|x| x + 1).map(|x| x + 1).map(|x| x + 1).collect();
+
+    assert_eq!(v2, vec![2, 3, 4]);
+
+
 }
+
+
+
