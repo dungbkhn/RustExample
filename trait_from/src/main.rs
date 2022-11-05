@@ -32,22 +32,80 @@ impl<T> MyTrait<T> for CautrucA<T>{
 	}
 }
 
+impl<T> std::fmt::Display for CautrucA<T> {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({}, {})", 5, 5)
+    }
+}
+
+impl<T: std::fmt::Debug> std::error::Error for CautrucA<T> {
+	
+}
+
 fn test<K,T> ()
 where K: MyTrait<T>
 {
 	K::foo();
-	println!("hello from test of struct_A");
+	println!("hello from test of main");
+}
+
+#[derive(Clone,Copy,Debug)]
+struct CautrucB<U>{
+	f1:u8,
+	f2:u32,
+	f3:U,
+}
+
+trait MyTraitB<V>{
+	fn foo(v:V){
+		println!("hello from foo mytrait B");
+	}
+}
+
+impl<V,U> MyTraitB<V> for CautrucB<U>{
+	fn foo(v:V){
+		println!("hello from foo mytrait B for cautruc B");
+	}
+}
+
+fn test_traiB<I, U>()
+	where I: MyTraitB<U>{	
+	println!("hello");
+}
+
+trait DungSink<Item> {
+    type OKKKK;
+    //fn start(item: Item) -> Result<(), Self::Error>;
+}
+
+fn test_DungSink<S, M, E>()
+	where 	M: std::fmt::Debug,
+			E: std::error::Error,
+			S: DungSink<M, OKKKK = E>{	
+	println!("hello form testDungSink");
+}
+
+
+struct C{
+	
+}
+
+impl<u32> DungSink<u32> for C{
+	type OKKKK=CautrucA<u32>;
 }
 
 fn main() {
 	let a = CautrucA{ f1:23,f2:56,f3:45};
 	let b = a;
 	CautrucA::foo(b);
-    	println!("Hello, world! {}",CautrucA::from(a).f1.to_string());
-    
-    	test::<CautrucA<u32>,u32>();
-    	
-    	let c = CautrucA::from(a);
-    	CautrucA::test::<CautrucA<u32>>(b);
-    	println!("Hello, world2222! {}",c.f1.to_string());
+	println!("Hello, world! {}",CautrucA::from(a).f1.to_string());
+
+	test::<CautrucA<u32>,u32>();
+	
+	let c = CautrucA::from(a);
+	CautrucA::test::<CautrucA<u32>>(b);
+	println!("Hello, world2222! {}",c.f1.to_string());
+	let c = C{};
+	
+	test_DungSink::<C,u32,CautrucA<u32>>();
 }
