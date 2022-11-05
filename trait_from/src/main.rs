@@ -74,8 +74,7 @@ fn test_traiB<I, U>()
 }
 
 trait DungSink<Item> {
-    type OKKKK;
-    //fn start(item: Item) -> Result<(), Self::Error>;
+    type OKKKK; 
 }
 
 fn test_DungSink<S, M, E>()
@@ -94,6 +93,36 @@ impl<u32> DungSink<u32> for C{
 	type OKKKK=CautrucA<u32>;
 }
 
+
+trait DungTrait1 {
+    type OK;    
+}
+
+trait DungTrait2<Item>: DungTrait1 {
+      
+}
+
+
+struct D{
+	
+}
+
+impl DungTrait1 for D{
+	type OK = CautrucA<u32>;
+}
+
+impl<Item> DungTrait2<Item> for D{
+
+}
+
+fn test_DungTrait<S, M, E>()
+	where 	M: std::fmt::Debug,
+			E: std::error::Error,
+			S: DungTrait2<M, OK = E>{	
+	println!("hello form test_DungTrait");
+}
+
+
 fn main() {
 	let a = CautrucA{ f1:23,f2:56,f3:45};
 	let b = a;
@@ -105,7 +134,9 @@ fn main() {
 	let c = CautrucA::from(a);
 	CautrucA::test::<CautrucA<u32>>(b);
 	println!("Hello, world2222! {}",c.f1.to_string());
-	let c = C{};
+	//let c = C{};
 	
 	test_DungSink::<C,u32,CautrucA<u32>>();
+	
+	test_DungTrait::<D,u32,CautrucA<u32>>();
 }
