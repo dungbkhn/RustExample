@@ -1,3 +1,11 @@
+use crate::List::NullValue;
+use crate::List::MyNode;
+
+enum List {
+    MyNode(i32, Box<List>),
+    NullValue,
+}
+
 #[derive(Debug, Clone, Copy)]
 struct Point {
     x: i32,
@@ -37,6 +45,22 @@ struct A{
 		age: u16,
 }
 
+#[derive(Debug, Clone)]
+struct B<'a>{
+		x: &'a u16,
+}
+
+/*
+impl Clone for B {
+    fn clone(&self) -> B<'a> {
+        let b = B{
+				*self.x
+		};
+		b
+    }
+}*/
+
+
 fn main(){
 	let s1 = Point{x:5,y:10};
 	
@@ -66,4 +90,20 @@ fn main(){
 	str1.push_str(" bbb");
 	
 	println!("{}",str2);
+	
+	let mut x = 5;
+
+	let b1 = B{
+		x:&x,
+	};
+	
+	let b2 = b1.clone();
+	
+	println!("{:?} {:?}",b1,b2);
+	
+	x=10;
+		
+	//println!("{:?} {:?}",b1,b2);
+	
+	let list = MyNode(1, Box::new(MyNode(2, Box::new(MyNode(3, Box::new(NullValue))))));
 }
