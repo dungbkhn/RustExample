@@ -134,7 +134,6 @@ fn main() {
 	let c = CautrucA::from(a);
 	CautrucA::test::<CautrucA<u32>>(b);
 	println!("Hello, world2222! {}",c.f1.to_string());
-	//let c = C{};
 	
 	test_DungSink::<C,u32,CautrucA<u32>>();
 	
