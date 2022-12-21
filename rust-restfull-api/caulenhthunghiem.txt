@@ -1,0 +1,8 @@
+curl -X GET '192.168.1.158:3030/v1/groceries' -H 'Content-Type application/json'
+curl -X POST '192.168.1.158:3030/v1/groceries' -H "Content-Type: application/json" -d '{"name": "1", "address" : "60dfgdfgdfgdfgdfgdgdfgdf/dgdfgdfgdfgdfg/dfhfghgfh/24" }'
+curl -X PUT '192.168.1.158:3030/v1/groceries' -H "Content-Type: application/json" -d '{"name": "1", "address" : "6sgdfgdfgfdg" }'
+curl -X GET '192.168.1.158:3030/v1/groceries' -H 'Content-Type application/json'
+curl -X GET '127.0.0.1:3030/v1/g' -H 'Content-Type application/json'
+curl -X POST '127.0.0.1:3030/v1/g' -H "Content-Type: application/json" -d '{"name": "1", "address" : "60dfgdfgdfgdfgdfgdgdfgdf/dgdfgdfgdfgdfg/dfhfghgfh/24" }'
+curl -X PUT '127.0.0.1:3030/v1/g' -H "Content-Type: application/json" -d '{"name": "1", "address" : "6sgdfgdfgfdg" }'
+curl -X GET '127.0.0.1:3030/v1/g' -H 'Content-Type application/json'
