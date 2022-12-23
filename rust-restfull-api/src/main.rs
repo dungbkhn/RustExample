@@ -9,7 +9,16 @@ use std::time::Duration;
 use tokio::sync::mpsc;
 use std::convert::TryInto;
 
-type Items = HashMap<String, (String,u8)>;
+use indexmap::{IndexMap, IndexSet};
+use rand::Rng;
+
+use std::time::Instant;
+use std::{
+    marker::PhantomData,
+    time::{SystemTime, UNIX_EPOCH},
+};
+
+type Items = IndexMap<String, (String,[u8; 16])>;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 struct Item {
@@ -20,14 +29,13 @@ struct Item {
 #[derive(Clone)]
 struct Store {
   grocery_list: Arc<RwLock<Items>>,
-  counter : Arc<RwLock<u64>>,
+  
 }
 
 impl Store {
     fn new() -> Self {
         Store {
-            grocery_list: Arc::new(RwLock::new(HashMap::new())),
-            counter : Arc::new(RwLock::new(0)),
+            grocery_list: Arc::new(RwLock::new(IndexMap::new())),            
         }
     }
 }
@@ -36,10 +44,13 @@ async fn add_grocery_list_item(
     item: Item,
     store: Store
     ) -> Result<impl warp::Reply, warp::Rejection> {
-		let r = store.counter.read();
-		let i = (*r).try_into().unwrap();
-        store.grocery_list.write().insert(item.name, (item.address,i));
-		println!("PostData {}",i);
+		let timestamp = SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap();
+		let timestamp = timestamp.as_millis();
+		let bytes = timestamp.to_be_bytes();
+        store.grocery_list.write().insert(item.name, (item.address,bytes));
+		println!("PostData");
         Ok(warp::reply::with_status(
             "Added items to the g list",
             http::StatusCode::CREATED,
@@ -50,8 +61,12 @@ async fn update_grocery_list_item(
     item: Item,
     store: Store
     ) -> Result<impl warp::Reply, warp::Rejection> {
-        store.grocery_list.write().insert(item.name, (item.address,12));
-
+		let timestamp = SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap();
+		let timestamp = timestamp.as_millis();
+		let bytes = timestamp.to_be_bytes();
+        store.grocery_list.write().insert(item.name, (item.address,bytes));
 
         Ok(warp::reply::with_status(
             "Updated items to the g list",
@@ -77,14 +92,64 @@ async fn delete_grocery_list_item(
 async fn get_grocery_list(
     store: Store
     ) -> Result<impl warp::Reply, warp::Rejection> {
-        let mut result = HashMap::new();
+        let mut result: HashMap<String, String> = HashMap::new();
         let r = store.grocery_list.read();
-
-
-        for (key,(value,t)) in r.iter() {
-            result.insert(key, value);
+		let len = r.len();
+		//let aaaaa = r.get_index(0);
+        //for (key,(value,t)) in r.iter() {
+        //    result.insert(key, value);
+        //}
+        
+        //println!("element {:?}", aaaaa);
+        
+        if len > 2 {
+				let mut random_number = rand::thread_rng().gen_range(1..=len);
+				random_number -= 1;
+				
+				let mut n1 = random_number;
+				let mut n2 = n1;
+				
+				if random_number != len-1 {
+					n2 = n1 + 1;		
+				} else {
+					n2 = 0;
+				}
+				
+				println!("n1 {} n2 {}", n1,n2);
+				let element1 = r.get_index(n1);
+				match element1 {
+					Some(e) => {result.insert(e.0.to_string(), e.1.0.to_string());},
+					_ => {},
+				}		
+				let element2 = r.get_index(n2);
+				match element2 {
+					Some(e) => {result.insert(e.0.to_string(), e.1.0.to_string());},
+					_ => {},
+				}	
+		}		
+		else if len > 0 {
+			let mut n1 = 0;
+			let mut n2 = n1;
+			let element1 = r.get_index(n1);
+			match element1 {
+				Some(e) => {result.insert(e.0.to_string(), e.1.0.to_string());},
+				_ => {},
+			}
+			if len==2 {
+				n2 = 1;
+				let element2 = r.get_index(n2);
+				match element2 {
+					Some(e) => {result.insert(e.0.to_string(), e.1.0.to_string());},
+					_ => {},
+				}
+			}
+			println!("n1 {} n2 {}", n1,n2);
+		}
+		
+		for (k,v) in result.iter() {
+            println!("element in result: {} {} {}",len,k,v);;
         }
-
+        
         Ok(warp::reply::json(
             &result
         ))
@@ -161,22 +226,38 @@ async fn main() {
 		
     tokio::spawn(async move{ 				
 		loop{
-			send.send(true).unwrap();
-			delay_for(Duration::from_millis(15000)).await;
+			send.send(true).unwrap();			
+			delay_for(Duration::from_millis(60000)).await;			
 		}
 	});
-		
+			
 	
 	loop {
 		tokio::select!{
-			Some(m) = recver.recv() => {
-				//let mut r = store.counter.write();
-				//*r = *r + 1;
+			Some(m) = recver.recv() => {				
 				println!("===========================");
-				let r = store.grocery_list.read();
-				for (key,value) in r.iter() {
-					println!("store:{} {:?}", key, value);
+				let mut v = Vec::<String>::new();
+				
+				{
+					let r = store.grocery_list.read();				
+					for (key,(value,t)) in r.iter() {            
+						let timestamp = u128::from_be_bytes(*t);
+						let timestamp = Duration::from_millis(timestamp as u64); // TODO: handle overflow
+						let latency = SystemTime::now()
+							.duration_since(UNIX_EPOCH + timestamp)
+							.unwrap();
+						println!("show {} - latency: {}ms", key, latency.as_millis());
+						if latency.as_millis() > 330000 {
+							v.push((*key.clone()).to_string());
+						}
+					}
 				}
+				
+				for k in &v {
+					//println!("{i}");
+					store.grocery_list.write().remove(k);
+				}
+				
 				println!("===========================");
 			}
 		}
@@ -184,6 +265,29 @@ async fn main() {
 }
 
 /*
+
+
+let timestamp = SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap();
+                    let timestamp = timestamp.as_millis();
+                    let bytes = timestamp.to_be_bytes();
+                    println!("{:?}",bytes);
+let timestamp = u128::from_be_bytes(bytes);
+                        let timestamp = Duration::from_millis(timestamp as u64); // TODO: handle overflow
+                        let latency = SystemTime::now()
+                            .duration_since(UNIX_EPOCH + timestamp)
+                            .unwrap();
+                            println!("latency: {}ms", latency.as_millis());
+*/
+/*
+ counter : Arc<RwLock<u64>>,
+ counter : Arc::new(RwLock::new(0)),
+ let r = store.counter.read();
+ let i = (*r).try_into().unwrap();
+ let mut r = store.counter.write();
+ *r = *r + 1;
+ 
  */
 //let r : std::sync::RwLock<u8> = store.counter::try_unwrap();
 //let t = r.unwrap();
@@ -192,3 +296,17 @@ async fn main() {
 //let mut lck = store.counter.lock().unwrap();
 //let w = lck.take().unwrap();
 //let mut w = r.write().unwrap();
+/*
+let timestamp = SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap();
+                    let timestamp = timestamp.as_millis();
+                    let bytes = timestamp.to_be_bytes();
+			delay_for(Duration::from_millis(15000)).await;
+			let timestamp = u128::from_be_bytes(bytes);
+                        let timestamp = Duration::from_millis(timestamp as u64); // TODO: handle overflow
+                        let latency = SystemTime::now()
+                            .duration_since(UNIX_EPOCH + timestamp)
+                            .unwrap();
+                            println!("latency: {}ms", latency.as_millis());
+*/
