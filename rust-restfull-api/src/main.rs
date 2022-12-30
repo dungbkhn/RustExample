@@ -147,7 +147,7 @@ async fn get_grocery_list(
 		}
 		
 		for (k,v) in result.iter() {
-            println!("element in result: {} {} {}",len,k,v);;
+            println!("element in result: {} {} {}",len,k,v);
         }
         
         Ok(warp::reply::json(
